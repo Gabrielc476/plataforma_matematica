@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InteractivePane } from "@/components/interactive/InteractivePane";
 import { Lesson } from "./Lesson";
 import { QuickGenerator } from "./QuickGenerator";
+import { Workspace } from "./Workspace";
 
 /**
  * MainContent é o container para a área principal de aprendizado.
  * Ele é dividido em duas colunas:
- * 1. A coluna da esquerda contém a Lição atual e o Gerador Rápido de problemas.
+ * 1. A coluna da esquerda contém a Lição, o Gerador Rápido e a Área de Trabalho.
  * 2. A coluna da direita contém o Painel Interativo, que muda de acordo com o tópico.
  */
 export function MainContent() {
@@ -17,6 +18,7 @@ export function MainContent() {
       <div className="space-y-8">
         <Lesson />
         <QuickGenerator />
+        <Workspace />
       </div>
 
       <aside className="sticky top-20 space-y-8">
@@ -35,3 +37,4 @@ export function MainContent() {
     </div>
   );
 }
+

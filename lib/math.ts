@@ -30,3 +30,31 @@ export function genLinearEquation(): Equation {
   const c = a * x + b;
   return { a, b, c, x, text: `${a}x ${b >= 0 ? '+ ' + b : '- ' + Math.abs(b)} = ${c}` };
 }
+
+/**
+ * Gera os passos para resolver uma equação linear.
+ * @param eq O objeto da equação a ser resolvida.
+ * @returns Um array de strings, cada uma representando um passo da solução.
+ */
+export function solveLinearEquation(eq: Equation): string[] {
+  const steps: string[] = [];
+  const { a, b, c, x } = eq;
+
+  steps.push(`Equação: ${eq.text}`);
+
+  if (b !== 0) {
+    const cMinusB = c - b;
+    steps.push(`1. Mova a constante para o outro lado:`);
+    steps.push(`${a}x = ${c} ${b > 0 ? '-' : '+'} ${Math.abs(b)}`);
+    steps.push(`${a}x = ${cMinusB}`);
+  }
+
+  if (a !== 1) {
+    steps.push(`2. Isole o 'x' dividindo por ${a}:`);
+    steps.push(`x = ${c - b} / ${a}`);
+  }
+
+  steps.push(`Resultado: x = ${x}`);
+  return steps;
+}
+
