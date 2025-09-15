@@ -64,6 +64,7 @@ export function ArithmeticLesson() {
     if (isCorrect) {
       setFeedback(<p className="text-green-600 font-bold mt-2">Correto! +5 XP</p>);
       dispatch({ type: 'ADD_XP', payload: { amount: 5, reason: 'Prática de Aritmética' } });
+      // Gera um novo problema automaticamente após o acerto
       setTimeout(generateProblem, 1500);
     } else {
       setFeedback(<p className="text-red-600 font-bold mt-2">Incorreto. Tente novamente.</p>);

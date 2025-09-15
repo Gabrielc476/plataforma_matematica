@@ -43,8 +43,8 @@ export const topics: Topics = {
         content:'Resolva equações do tipo ax + b = c. Use o painel interativo para gerar equações e ver a solução passo a passo.'
       },
       {
-        title:'Sistemas Simples', 
-        content:'Aprenda a resolver sistemas de equações 2x2 pelos métodos de substituição ou adição.'
+        title:'Equações Quadráticas', 
+        content:'Aprenda a resolver equações de segundo grau (ax² + bx + c = 0) utilizando a fórmula de Bhaskara.'
       }
     ]
   },
@@ -52,8 +52,12 @@ export const topics: Topics = {
     title:'Geometria',
     lessons:[
       {
-        title:'Área e Perímetro',
-        content:'Calcule a área de retângulos, triângulos e círculos. Experimente o painel interativo de geometria para uma experiência visual.'
+        title:'Área de Retângulos',
+        content:'Calcule a área de retângulos e quadrados. Experimente o painel interativo de geometria para uma experiência visual.'
+      },
+      {
+        title:'Área do Círculo',
+        content:'Aprenda a calcular a área de um círculo usando a fórmula A = π * r².'
       }
     ]
   },
@@ -76,3 +80,4 @@ export const topics: Topics = {
     ]
   }
 };
+

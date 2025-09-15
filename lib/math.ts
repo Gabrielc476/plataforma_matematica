@@ -10,10 +10,18 @@ export type Equation = {
 };
 
 /**
+ * Define a estrutura de uma equação quadrática.
+ */
+export type QuadraticEquation = {
+    a: number;
+    b: number;
+    c: number;
+    roots: number[];
+    text: string;
+}
+
+/**
  * Gera um número inteiro aleatório dentro de um intervalo.
- * @param a O limite inferior (inclusivo).
- * @param b O limite superior (inclusivo).
- * @returns Um número inteiro aleatório.
  */
 export function randInt(a: number, b: number): number {
   return Math.floor(Math.random() * (b - a + 1)) + a;
@@ -21,7 +29,6 @@ export function randInt(a: number, b: number): number {
 
 /**
  * Cria uma equação linear simples com uma solução inteira.
- * @returns Um objeto Equation contendo os coeficientes e a solução.
  */
 export function genLinearEquation(): Equation {
   const a = randInt(1, 10);
@@ -33,29 +40,97 @@ export function genLinearEquation(): Equation {
 
 /**
  * Gera os passos para resolver uma equação linear.
- * @param eq O objeto da equação a ser resolvida.
- * @returns Um array de strings, cada uma representando um passo da solução.
  */
 export function solveLinearEquation(eq: Equation): string[] {
   const steps: string[] = [];
   const { a, b, c, x } = eq;
-
   steps.push(`Equação: ${eq.text}`);
-
   if (b !== 0) {
     const cMinusB = c - b;
-    steps.push(`1. Mova a constante para o outro lado:`);
-    steps.push(`${a}x = ${c} ${b > 0 ? '-' : '+'} ${Math.abs(b)}`);
-    steps.push(`${a}x = ${cMinusB}`);
+    steps.push(`1. Mova a constante: ${a}x = ${c} ${b > 0 ? '-' : '+'} ${Math.abs(b)}`);
+    steps.push(`   ${a}x = ${cMinusB}`);
   }
-
   if (a !== 1) {
-    steps.push(`2. Isole o 'x' dividindo por ${a}:`);
-    steps.push(`x = ${c - b} / ${a}`);
+    steps.push(`2. Isole 'x': x = ${c - b} / ${a}`);
   }
-
   steps.push(`Resultado: x = ${x}`);
   return steps;
+}
+
+/**
+ * Cria uma equação quadrática com soluções inteiras.
+ */
+export function genQuadraticEquation(): QuadraticEquation {
+    const a = randInt(1, 3);
+    const r1 = randInt(-5, 5);
+    let r2 = randInt(-5, 5);
+    // Garante que as raízes sejam diferentes na maioria das vezes para problemas mais interessantes
+    if (r1 === r2 && Math.random() < 0.8) {
+        r2 = r1 + randInt(1, 3);
+    }
+    
+    const b = -a * (r1 + r2);
+    const c = a * r1 * r2;
+
+    const formatTerm = (coeff: number, power: string) => {
+        if (coeff === 0) return "";
+        const sign = coeff > 0 ? '+' : '-';
+        const absCoeff = Math.abs(coeff);
+        const displayCoeff = absCoeff === 1 && power !== '' ? '' : absCoeff;
+        return ` ${sign} ${displayCoeff}${power}`;
+    };
+
+    let text = `${a === 1 ? '' : a}x²${formatTerm(b, 'x')}${formatTerm(c, '')} = 0`;
+    text = text.trim().startsWith('+') ? text.trim().substring(2) : text.trim();
+
+    return { a, b, c, roots: [r1, r2].sort((n1, n2) => n1 - n2), text };
+}
+
+/**
+ * Gera os passos para resolver uma equação quadrática usando a fórmula de Bhaskara.
+ */
+export function solveQuadraticEquation(eq: QuadraticEquation): string[] {
+    const { a, b, c, roots } = eq;
+    const steps: string[] = [];
+    steps.push(`Equação: ${eq.text}`);
+    steps.push(`1. Identifique os coeficientes: a=${a}, b=${b}, c=${c}`);
+    const delta = b * b - 4 * a * c;
+    steps.push(`2. Calcule o delta: Δ = b² - 4ac`);
+    steps.push(`   Δ = (${b})² - 4 * ${a} * ${c} = ${delta}`);
+    steps.push(`3. Aplique a fórmula: x = (-b ± √Δ) / 2a`);
+    const sqrtDelta = Math.sqrt(delta);
+    steps.push(`   x = (-(${b}) ± √${delta}) / (2 * ${a})`);
+    steps.push(`   x = (${-b} ± ${sqrtDelta}) / ${2 * a}`);
+    if (roots.length > 1) {
+        steps.push(`x' = (${-b} + ${sqrtDelta}) / ${2 * a} = ${roots[1]}`);
+        steps.push(`x'' = (${-b} - ${sqrtDelta}) / ${2 * a} = ${roots[0]}`);
+        steps.push(`Resultado: {${roots[0]}, ${roots[1]}}`);
+    } else {
+        steps.push(`x = ${-b} / ${2 * a} = ${roots[0]}`);
+        steps.push(`Resultado: {${roots[0]}}`);
+    }
+    return steps;
+}
+
+/**
+ * Gera um problema de área de círculo.
+ */
+export function genCircleProblem(): { radius: number, area: number } {
+    const radius = randInt(2, 15);
+    const area = Math.PI * radius * radius;
+    return { radius, area };
+}
+
+/**
+ * Gera os passos para resolver um problema de área de círculo.
+ */
+export function solveCircleArea(radius: number): string[] {
+    const area = Math.PI * radius * radius;
+    return [
+        `Fórmula: A = π * r²`,
+        `1. Substitua o raio (r): A = π * ${radius}²`,
+        `2. Calcule o resultado: A ≈ ${area.toFixed(2)}`
+    ];
 }
 
 /**
@@ -66,9 +141,11 @@ export function solveLinearEquation(eq: Equation): string[] {
 export function derivePolynomial(input: string): string {
   if (!input || !input.trim()) return '0';
   
+  // Limpa a string e normaliza os sinais
   const cleaned = input.replace(/\s+/g, '').replace(/-/g, '+-');
   const tokens = cleaned.split('+').filter(Boolean);
 
+  // Mapeia cada termo para um objeto { coeficiente, potência }
   const terms = tokens.map(t => {
     if (t.includes('x')) {
       const parts = t.split('x');
@@ -86,8 +163,9 @@ export function derivePolynomial(input: string): string {
     }
   });
 
+  // Calcula a derivada de cada termo
   const derived = terms.map(term => {
-    if (term.pow === 0) return null;
+    if (term.pow === 0) return null; // A derivada de uma constante é 0
     
     const newCoeff = term.coef * term.pow;
     const newPow = term.pow - 1;
@@ -95,15 +173,17 @@ export function derivePolynomial(input: string): string {
     if (newPow === 0) return `${newCoeff}`;
     if (newPow === 1) return `${newCoeff}x`;
     return `${newCoeff}x^${newPow}`;
-  }).filter(Boolean);
+  }).filter(Boolean); // Remove os termos nulos
 
   if (derived.length === 0) return '0';
   
+  // Junta os termos e formata a string de saída
   return derived.join(' + ').replace(/\+ -/g, '- ');
 }
 
-// Novas funções de solução
-export const solveArithmetic = (a: number, b: number, op: '+' | '-') => [`Solução: ${a} ${op} ${b} = ${op === '+' ? a + b : a - b}`];
-export const solveGeometry = (base: number, height: number) => [`Fórmula: Área = base * altura`, `Solução: ${base} * ${height} = ${base * height}`];
+
+// Funções de solução para os outros tópicos do Quick Generator
+export const solveArithmetic = (a: number, b: number, op: '+' | '-') => [`${a} ${op} ${b} = ${op === '+' ? a + b : a - b}`];
+export const solveGeometry = (base: number, height: number) => [`Área = base * altura`, `Área = ${base} * ${height} = ${base * height}`];
 export const solveCalculus = (expression: string) => [`d/dx (${expression}) = ${derivePolynomial(expression)}`];
 

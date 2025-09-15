@@ -59,6 +59,7 @@ export function CalculusLesson() {
   }, [generateProblem]);
 
   const checkAnswer = () => {
+    // Normaliza a resposta para uma comparação mais flexível
     const normalizedUserAnswer = userAnswer.replace(/\s/g, "").toLowerCase();
     const normalizedCorrectAnswer = problem.answer.replace(/\s/g, "").toLowerCase();
 
@@ -69,7 +70,7 @@ export function CalculusLesson() {
     } else {
       setFeedback(<p className="text-red-600 font-bold mt-2">Incorreto. A resposta é: {problem.answer}</p>);
     }
-    setSolution(solveCalculus(problem.expression));
+     setSolution(solveCalculus(problem.expression));
   };
 
   return (
