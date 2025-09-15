@@ -66,11 +66,9 @@ export function solveLinearEquation(eq: Equation): string[] {
 export function derivePolynomial(input: string): string {
   if (!input || !input.trim()) return '0';
   
-  // Limpa a string e normaliza os sinais
   const cleaned = input.replace(/\s+/g, '').replace(/-/g, '+-');
   const tokens = cleaned.split('+').filter(Boolean);
 
-  // Mapeia cada termo para um objeto { coeficiente, potência }
   const terms = tokens.map(t => {
     if (t.includes('x')) {
       const parts = t.split('x');
@@ -88,9 +86,8 @@ export function derivePolynomial(input: string): string {
     }
   });
 
-  // Calcula a derivada de cada termo
   const derived = terms.map(term => {
-    if (term.pow === 0) return null; // A derivada de uma constante é 0
+    if (term.pow === 0) return null;
     
     const newCoeff = term.coef * term.pow;
     const newPow = term.pow - 1;
@@ -98,11 +95,15 @@ export function derivePolynomial(input: string): string {
     if (newPow === 0) return `${newCoeff}`;
     if (newPow === 1) return `${newCoeff}x`;
     return `${newCoeff}x^${newPow}`;
-  }).filter(Boolean); // Remove os termos nulos
+  }).filter(Boolean);
 
   if (derived.length === 0) return '0';
   
-  // Junta os termos e formata a string de saída
   return derived.join(' + ').replace(/\+ -/g, '- ');
 }
+
+// Novas funções de solução
+export const solveArithmetic = (a: number, b: number, op: '+' | '-') => [`Solução: ${a} ${op} ${b} = ${op === '+' ? a + b : a - b}`];
+export const solveGeometry = (base: number, height: number) => [`Fórmula: Área = base * altura`, `Solução: ${base} * ${height} = ${base * height}`];
+export const solveCalculus = (expression: string) => [`d/dx (${expression}) = ${derivePolynomial(expression)}`];
 
