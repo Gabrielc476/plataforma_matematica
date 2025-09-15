@@ -58,3 +58,51 @@ export function solveLinearEquation(eq: Equation): string[] {
   return steps;
 }
 
+/**
+ * Calcula a derivada de um polinómio simples.
+ * @param input A expressão do polinómio como string (ex: "3x^2 - 2x + 5").
+ * @returns A derivada como string.
+ */
+export function derivePolynomial(input: string): string {
+  if (!input || !input.trim()) return '0';
+  
+  // Limpa a string e normaliza os sinais
+  const cleaned = input.replace(/\s+/g, '').replace(/-/g, '+-');
+  const tokens = cleaned.split('+').filter(Boolean);
+
+  // Mapeia cada termo para um objeto { coeficiente, potência }
+  const terms = tokens.map(t => {
+    if (t.includes('x')) {
+      const parts = t.split('x');
+      let coef = parts[0];
+      if (coef === '' || coef === '+') coef = '1';
+      if (coef === '-') coef = '-1';
+      
+      let pow = 1;
+      if (parts[1] && parts[1].startsWith('^')) {
+        pow = parseInt(parts[1].slice(1), 10);
+      }
+      return { coef: parseFloat(coef), pow };
+    } else {
+      return { coef: parseFloat(t), pow: 0 };
+    }
+  });
+
+  // Calcula a derivada de cada termo
+  const derived = terms.map(term => {
+    if (term.pow === 0) return null; // A derivada de uma constante é 0
+    
+    const newCoeff = term.coef * term.pow;
+    const newPow = term.pow - 1;
+
+    if (newPow === 0) return `${newCoeff}`;
+    if (newPow === 1) return `${newCoeff}x`;
+    return `${newCoeff}x^${newPow}`;
+  }).filter(Boolean); // Remove os termos nulos
+
+  if (derived.length === 0) return '0';
+  
+  // Junta os termos e formata a string de saída
+  return derived.join(' + ').replace(/\+ -/g, '- ');
+}
+

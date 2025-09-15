@@ -7,6 +7,7 @@ import { topics } from "@/data/topics";
 interface AppState {
   currentTopicKey: keyof typeof topics;
   currentLessonIndex: number;
+  isPracticing: boolean; // Adicionado: para controlar o modo de prática
   xp: number;
   level: number;
   streak: number;
@@ -16,12 +17,14 @@ interface AppState {
 type AppAction =
   | { type: "SET_TOPIC"; payload: keyof typeof topics }
   | { type: "SET_LESSON_INDEX"; payload: number }
-  | { type: "ADD_XP"; payload: { amount: number; reason: string } }; // <-- CORRIGIDO
+  | { type: "ADD_XP"; payload: { amount: number; reason: string } }
+  | { type: "SET_PRACTICING"; payload: boolean }; // Adicionado: nova ação
 
 // 3. Definir o estado inicial da aplicação
 const initialState: AppState = {
   currentTopicKey: "arithmetic",
   currentLessonIndex: 0,
+  isPracticing: false, // Adicionado: valor inicial
   xp: 0,
   level: 1,
   streak: 0,
@@ -35,15 +38,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         currentTopicKey: action.payload,
         currentLessonIndex: 0,
+        isPracticing: false, // Garante que sai do modo de prática ao trocar de tópico
       };
     case "SET_LESSON_INDEX":
         return {
             ...state,
             currentLessonIndex: action.payload,
         };
+    case "SET_PRACTICING": // Adicionado: lógica para a nova ação
+        return {
+            ...state,
+            isPracticing: action.payload,
+        };
     case "ADD_XP": {
-      // Usa action.payload.amount para o cálculo
-      const newXp = state.xp + action.payload.amount; // <-- CORRIGIDO
+      const newXp = state.xp + action.payload.amount;
       const nextLevelXp = state.level * 50;
       if (newXp >= nextLevelXp) {
         return {

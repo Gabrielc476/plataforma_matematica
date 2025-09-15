@@ -3,9 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppContext } from "@/context/app-provider";
 import { topics } from "@/data/topics";
-// Importe aqui os futuros componentes interativos
-// import { InteractiveGeometry } from "./InteractiveGeometry";
-// import { InteractiveCalculus } from "./InteractiveCalculus";
+import { InteractiveGeometry } from "./InteractiveGeometry";
+import { InteractiveAlgebra } from "./InteractiveAlgebra";
 
 /**
  * Este componente atua como um "roteador" para a área interativa.
@@ -14,20 +13,25 @@ import { topics } from "@/data/topics";
  */
 export function InteractivePane() {
     const { state } = useAppContext();
-    const currentTopicKey = state.currentTopicKey;
+    const { currentTopicKey, isPracticing } = state;
+
+    // Não mostra o painel interativo durante a prática, pois ele já está integrado na lição
+    if (isPracticing) {
+        return null;
+    }
 
     const renderInteractiveContent = () => {
         switch (currentTopicKey) {
+            case "algebra":
+                return <InteractiveAlgebra />;
             case "geometry":
-                // return <InteractiveGeometry />;
-                return <p className="text-sm text-muted-foreground">Componente de Geometria Interativa aqui.</p>
+                return <InteractiveGeometry />;
             case "calculus":
-                // return <InteractiveCalculus />;
                  return <p className="text-sm text-muted-foreground">Componente de Cálculo Interativo aqui.</p>
             case "arithmetic":
                  return <p className="text-sm text-muted-foreground">Componente de Aritmética Interativa aqui.</p>
             default:
-                return <p className="text-sm text-muted-foreground">Selecione um tópico com um painel interativo, como Geometria ou Cálculo.</p>
+                return <p className="text-sm text-muted-foreground">Selecione um tópico com um painel interativo, como Álgebra ou Geometria.</p>
         }
     }
 
@@ -45,3 +49,4 @@ export function InteractivePane() {
         </Card>
     );
 }
+
