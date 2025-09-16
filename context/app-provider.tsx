@@ -7,10 +7,11 @@ import { topics } from "@/data/topics";
 interface AppState {
   currentTopicKey: keyof typeof topics;
   currentLessonIndex: number;
-  isPracticing: boolean; // Adicionado: para controlar o modo de prática
+  isPracticing: boolean;
   xp: number;
   level: number;
   streak: number;
+  consoleContent: { title: string; lines: string[] }; // Adicionado: para o conteúdo do console
 }
 
 // 2. Definir as ações que podem modificar o estado
@@ -18,16 +19,19 @@ type AppAction =
   | { type: "SET_TOPIC"; payload: keyof typeof topics }
   | { type: "SET_LESSON_INDEX"; payload: number }
   | { type: "ADD_XP"; payload: { amount: number; reason: string } }
-  | { type: "SET_PRACTICING"; payload: boolean }; // Adicionado: nova ação
+  | { type: "SET_PRACTICING"; payload: boolean }
+  | { type: "SET_CONSOLE_CONTENT"; payload: { title: string; lines: string[] } } // Adicionado
+  | { type: "CLEAR_CONSOLE" }; // Adicionado
 
 // 3. Definir o estado inicial da aplicação
 const initialState: AppState = {
   currentTopicKey: "arithmetic",
   currentLessonIndex: 0,
-  isPracticing: false, // Adicionado: valor inicial
+  isPracticing: false,
   xp: 0,
   level: 1,
   streak: 0,
+  consoleContent: { title: "Console", lines: ["Respostas e passos aparecerão aqui."] }, // Adicionado
 };
 
 // 4. Criar o reducer - uma função que executa as ações
@@ -38,14 +42,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         currentTopicKey: action.payload,
         currentLessonIndex: 0,
-        isPracticing: false, // Garante que sai do modo de prática ao trocar de tópico
+        isPracticing: false,
       };
-    case "SET_LESSON_INDEX":
-        return {
-            ...state,
-            currentLessonIndex: action.payload,
-        };
-    case "SET_PRACTICING": // Adicionado: lógica para a nova ação
+    case "SET_LESSON_INDEX": {
+        const topic = topics[state.currentTopicKey];
+        const newIndex = action.payload;
+        if (newIndex >= 0 && newIndex < topic.lessons.length) {
+            return { ...state, currentLessonIndex: newIndex };
+        }
+        return state;
+    }
+    case "SET_PRACTICING":
         return {
             ...state,
             isPracticing: action.payload,
@@ -63,6 +70,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       }
       return { ...state, xp: newXp, streak: state.streak + 1 };
     }
+    case "SET_CONSOLE_CONTENT": // Adicionado
+      return { ...state, consoleContent: action.payload };
+    case "CLEAR_CONSOLE": // Adicionado
+      return { ...state, consoleContent: { title: "Console", lines: ["Limpo."] } };
     default:
       return state;
   }
@@ -81,7 +92,11 @@ const initializer = (initialValue: AppState): AppState => {
     }
     try {
         const storedState = localStorage.getItem("math-app-state");
-        return storedState ? JSON.parse(storedState) : initialValue;
+        if (storedState) {
+            // Garante que o estado do console não é persistido
+            return { ...JSON.parse(storedState), consoleContent: initialValue.consoleContent };
+        }
+        return initialValue;
     } catch (error) {
         console.error("Error parsing state from localStorage", error);
         return initialValue;
@@ -91,10 +106,11 @@ const initializer = (initialValue: AppState): AppState => {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = React.useReducer(appReducer, initialState, initializer);
 
-  // Efeito para salvar o estado no localStorage sempre que ele mudar
   React.useEffect(() => {
     try {
-        localStorage.setItem("math-app-state", JSON.stringify(state));
+        // Exclui o consoleContent ao salvar
+        const { consoleContent, ...stateToSave } = state;
+        localStorage.setItem("math-app-state", JSON.stringify(stateToSave));
     } catch (error) {
         console.error("Error saving state to localStorage", error);
     }

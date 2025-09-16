@@ -101,7 +101,7 @@ export function solveQuadraticEquation(eq: QuadraticEquation): string[] {
     const sqrtDelta = Math.sqrt(delta);
     steps.push(`   x = (-(${b}) ± √${delta}) / (2 * ${a})`);
     steps.push(`   x = (${-b} ± ${sqrtDelta}) / ${2 * a}`);
-    if (roots.length > 1) {
+    if (roots.length > 1 && roots[0] !== roots[1]) {
         steps.push(`x' = (${-b} + ${sqrtDelta}) / ${2 * a} = ${roots[1]}`);
         steps.push(`x'' = (${-b} - ${sqrtDelta}) / ${2 * a} = ${roots[0]}`);
         steps.push(`Resultado: {${roots[0]}, ${roots[1]}}`);
@@ -135,17 +135,13 @@ export function solveCircleArea(radius: number): string[] {
 
 /**
  * Calcula a derivada de um polinómio simples.
- * @param input A expressão do polinómio como string (ex: "3x^2 - 2x + 5").
- * @returns A derivada como string.
  */
 export function derivePolynomial(input: string): string {
   if (!input || !input.trim()) return '0';
   
-  // Limpa a string e normaliza os sinais
   const cleaned = input.replace(/\s+/g, '').replace(/-/g, '+-');
   const tokens = cleaned.split('+').filter(Boolean);
 
-  // Mapeia cada termo para um objeto { coeficiente, potência }
   const terms = tokens.map(t => {
     if (t.includes('x')) {
       const parts = t.split('x');
@@ -163,9 +159,8 @@ export function derivePolynomial(input: string): string {
     }
   });
 
-  // Calcula a derivada de cada termo
   const derived = terms.map(term => {
-    if (term.pow === 0) return null; // A derivada de uma constante é 0
+    if (term.pow === 0) return null;
     
     const newCoeff = term.coef * term.pow;
     const newPow = term.pow - 1;
@@ -173,11 +168,10 @@ export function derivePolynomial(input: string): string {
     if (newPow === 0) return `${newCoeff}`;
     if (newPow === 1) return `${newCoeff}x`;
     return `${newCoeff}x^${newPow}`;
-  }).filter(Boolean); // Remove os termos nulos
+  }).filter(Boolean);
 
   if (derived.length === 0) return '0';
   
-  // Junta os termos e formata a string de saída
   return derived.join(' + ').replace(/\+ -/g, '- ');
 }
 
@@ -185,5 +179,34 @@ export function derivePolynomial(input: string): string {
 // Funções de solução para os outros tópicos do Quick Generator
 export const solveArithmetic = (a: number, b: number, op: '+' | '-') => [`${a} ${op} ${b} = ${op === '+' ? a + b : a - b}`];
 export const solveGeometry = (base: number, height: number) => [`Área = base * altura`, `Área = ${base} * ${height} = ${base * height}`];
-export const solveCalculus = (expression: string) => [`d/dx (${expression}) = ${derivePolynomial(expression)}`];
+
+/**
+ * Gera uma explicação passo a passo para a derivada de um polinómio simples.
+ */
+export const solveCalculus = (expression: string): string[] => {
+    const steps: string[] = [];
+    const derivative = derivePolynomial(expression);
+
+    // Extrai o coeficiente e a potência da expressão original
+    const match = expression.match(/(\d*)x\^(\d+)/);
+    if (!match) {
+        return [`d/dx (${expression}) = ${derivative}`];
+    }
+    
+    const coeff = parseInt(match[1] || "1", 10);
+    const power = parseInt(match[2], 10);
+
+    steps.push(`Problema: Encontre a derivada de ${expression}`);
+    steps.push(`1. Use a Regra da Potência: d/dx(axⁿ) = anxⁿ⁻¹`);
+    steps.push(`   - Onde 'a' é o coeficiente (${coeff}) e 'n' é a potência (${power}).`);
+    steps.push(`2. Multiplique o coeficiente pela potência:`);
+    steps.push(`   - a * n = ${coeff} * ${power} = ${coeff * power}`);
+    steps.push(`3. Subtraia 1 da potência:`);
+    steps.push(`   - n - 1 = ${power} - 1 = ${power - 1}`);
+    steps.push(`4. Junte os resultados:`);
+    steps.push(`   - ${coeff * power}x^${power - 1}`);
+    steps.push(`Resultado: ${derivative}`);
+
+    return steps;
+};
 

@@ -6,32 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppContext } from "@/context/app-provider";
 import { randInt, solveArithmetic } from "@/lib/math";
-import { ArrowLeft, Lightbulb, RefreshCw } from "lucide-react";
-
-// Componente genérico para exibir a solução (pode ser movido para um ficheiro partilhado se necessário)
-const Solution = ({ solution, title }: { solution: string[], title: string }) => {
-    const [show, setShow] = React.useState(false);
-    if (!solution.length) return null;
-    return (
-        <div className="mt-4">
-            <Button variant="ghost" size="sm" onClick={() => setShow(p => !p)}>
-                <Lightbulb className="mr-2 h-4 w-4" />
-                {show ? "Ocultar Solução" : "Mostrar Solução"}
-            </Button>
-            {show && (
-                <Card className="mt-2 bg-muted/50">
-                    <CardHeader className="p-4">
-                        <CardTitle className="text-sm">{title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 text-sm font-mono space-y-1">
-                        {solution.map((step, index) => <p key={index}>{step}</p>)}
-                    </CardContent>
-                </Card>
-            )}
-        </div>
-    );
-};
-
+import { ArrowLeft, RefreshCw, Lightbulb } from "lucide-react";
+import { Solution } from "./Solution";
 
 /**
  * Componente de prática para a lição de Aritmética.
@@ -42,7 +18,7 @@ export function ArithmeticLesson() {
   const [problem, setProblem] = React.useState({ a: 0, b: 0, operator: '+' as '+' | '-', answer: 0 });
   const [userAnswer, setUserAnswer] = React.useState("");
   const [feedback, setFeedback] = React.useState<React.ReactNode | null>(null);
-  const [solution, setSolution] = React.useState<string[]>([]);
+  const [showSolution, setShowSolution] = React.useState(false);
 
   const generateProblem = React.useCallback(() => {
     const a = randInt(10, 100);
@@ -52,7 +28,7 @@ export function ArithmeticLesson() {
     setProblem({ a, b, operator, answer });
     setUserAnswer("");
     setFeedback(null);
-    setSolution([]);
+    setShowSolution(false);
   }, []);
 
   React.useEffect(() => {
@@ -64,12 +40,10 @@ export function ArithmeticLesson() {
     if (isCorrect) {
       setFeedback(<p className="text-green-600 font-bold mt-2">Correto! +5 XP</p>);
       dispatch({ type: 'ADD_XP', payload: { amount: 5, reason: 'Prática de Aritmética' } });
-      // Gera um novo problema automaticamente após o acerto
       setTimeout(generateProblem, 1500);
     } else {
       setFeedback(<p className="text-red-600 font-bold mt-2">Incorreto. Tente novamente.</p>);
     }
-    setSolution(solveArithmetic(problem.a, problem.b, problem.operator));
   };
 
   return (
@@ -94,8 +68,22 @@ export function ArithmeticLesson() {
           />
           <Button onClick={checkAnswer}>Verificar</Button>
         </div>
-        <div className="text-center min-h-[24px]">{feedback}</div>
-        <Solution solution={solution} title="Solução" />
+        {feedback && <div className="text-center min-h-[24px]">{feedback}</div>}
+         {feedback && !showSolution && (
+            <div className="text-center">
+                <Button variant="ghost" size="sm" onClick={() => setShowSolution(true)}>
+                    <Lightbulb className="mr-2 h-4 w-4" />
+                    Mostrar Solução
+                </Button>
+            </div>
+        )}
+        {showSolution && (
+            <Solution
+                title="Solução Passo a Passo"
+                steps={solveArithmetic(problem.a, problem.b, problem.operator)}
+                onClose={() => setShowSolution(false)}
+            />
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
          <Button variant="ghost" onClick={() => dispatch({ type: 'SET_PRACTICING', payload: false })}>

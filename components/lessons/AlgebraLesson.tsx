@@ -6,29 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppContext } from "@/context/app-provider";
 import { genLinearEquation, Equation, solveLinearEquation, QuadraticEquation, genQuadraticEquation, solveQuadraticEquation } from "@/lib/math";
-import { X, Lightbulb } from "lucide-react";
+import { X } from "lucide-react";
 import { InteractiveAlgebra } from "../interactive/InteractiveAlgebra";
-
-// Componente genérico de solução
-const Solution = ({ solution, title }: { solution: string[], title: string }) => {
-    const [show, setShow] = React.useState(false);
-    if (!solution.length) return null;
-    return (
-        <div className="mt-4 text-center">
-            <Button variant="ghost" size="sm" onClick={() => setShow(p => !p)}>
-                <Lightbulb className="mr-2 h-4 w-4" />
-                {show ? "Ocultar Solução" : "Mostrar Solução"}
-            </Button>
-            {show && (
-                <Card className="mt-2 bg-muted/50 text-left">
-                     <CardContent className="p-4 text-sm font-mono space-y-1">
-                        {solution.map((step, index) => <p key={index}>{step}</p>)}
-                    </CardContent>
-                </Card>
-            )}
-        </div>
-    );
-};
 
 export function AlgebraLesson() {
   const { state, dispatch } = useAppContext();
@@ -36,6 +15,7 @@ export function AlgebraLesson() {
 
   const handleExitPractice = () => {
     dispatch({ type: "SET_PRACTICING", payload: false });
+    dispatch({ type: "CLEAR_CONSOLE" });
   };
 
   return (
@@ -63,19 +43,17 @@ export function AlgebraLesson() {
   );
 }
 
-// Sub-componente para equações lineares
+// Sub-componente interno para os exercícios de prática
 function LinearEquationPractice() {
     const { dispatch } = useAppContext();
     const [equation, setEquation] = React.useState<Equation>(genLinearEquation());
     const [answer, setAnswer] = React.useState("");
     const [feedback, setFeedback] = React.useState<React.ReactNode | null>(null);
-    const [solution, setSolution] = React.useState<string[]>([]);
 
     const generateNewProblem = React.useCallback(() => {
         setEquation(genLinearEquation());
         setAnswer("");
         setFeedback(null);
-        setSolution([]);
     }, []);
 
     const checkAnswer = () => {
@@ -85,9 +63,9 @@ function LinearEquationPractice() {
             dispatch({ type: 'ADD_XP', payload: { amount: 10, reason: 'Prática de Álgebra Linear' } });
             setTimeout(generateNewProblem, 1500);
         } else {
-            setFeedback(<p className="text-red-600 font-semibold">Incorreto. A resposta é {equation.x}.</p>);
+            setFeedback(<p className="text-red-600 font-semibold">Incorreto. Veja a solução no console.</p>);
         }
-        setSolution(solveLinearEquation(equation));
+        dispatch({ type: "SET_CONSOLE_CONTENT", payload: { title: "Solução (Eq. Linear)", lines: solveLinearEquation(equation) }});
     };
 
     return (
@@ -100,7 +78,6 @@ function LinearEquationPractice() {
                 <Button onClick={checkAnswer}>Verificar</Button>
             </div>
             <div className="text-center min-h-[24px] font-medium">{feedback}</div>
-            <Solution solution={solution} title="Resolução Passo a Passo"/>
         </div>
     )
 }
@@ -111,13 +88,11 @@ function QuadraticEquationPractice() {
     const [equation, setEquation] = React.useState<QuadraticEquation>(genQuadraticEquation());
     const [answer, setAnswer] = React.useState("");
     const [feedback, setFeedback] = React.useState<React.ReactNode | null>(null);
-    const [solution, setSolution] = React.useState<string[]>([]);
     
     const generateNewProblem = React.useCallback(() => {
         setEquation(genQuadraticEquation());
         setAnswer("");
         setFeedback(null);
-        setSolution([]);
     }, []);
 
     const checkAnswer = () => {
@@ -130,9 +105,9 @@ function QuadraticEquationPractice() {
             dispatch({ type: 'ADD_XP', payload: { amount: 15, reason: 'Prática de Álgebra Quadrática' } });
             setTimeout(generateNewProblem, 1500);
         } else {
-            setFeedback(<p className="text-red-600 font-semibold">Incorreto. As raízes são {correctRoots.join(', ')}.</p>);
+            setFeedback(<p className="text-red-600 font-semibold">Incorreto. Veja a solução no console.</p>);
         }
-        setSolution(solveQuadraticEquation(equation));
+        dispatch({ type: "SET_CONSOLE_CONTENT", payload: { title: "Solução (Bhaskara)", lines: solveQuadraticEquation(equation) }});
     };
     
     return (
@@ -145,7 +120,6 @@ function QuadraticEquationPractice() {
                 <Button onClick={checkAnswer}>Verificar</Button>
             </div>
             <div className="text-center min-h-[24px] font-medium">{feedback}</div>
-            <Solution solution={solution} title="Resolução (Bhaskara)"/>
         </div>
     )
 }
